@@ -1,0 +1,794 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Recetario Inteligente</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box
+        }
+        body {
+            font-family: 'Poppins', Arial, sans-serif;
+            background: linear-gradient(135deg, #f7f9fc, #eef2f5);
+            color: #333;
+            /* min-height: 100vh */
+        }
+        header {
+            padding: 2rem 0;
+            text-align: center;
+            background: #fff9;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, .1)
+        }
+        .logo {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: #ff6347;
+            margin-bottom: .5rem
+        }
+        .tagline {
+            font-size: 1.2rem;
+            color: #555
+        }
+        main {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 2rem
+        }
+        .form-section {
+            max-width: 500px;
+            width: 100%;
+            padding: 2rem;
+            background: #fff9;
+            border-radius: 25px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, .1)
+        }
+        .form-group {
+            margin-bottom: 1.5rem
+        }
+        label {
+            display: block;
+            margin-bottom: .5rem;
+            font-weight: 500
+        }
+        input,
+        select {
+            width: 100%;
+            padding: 1rem;
+            border: 2px solid #e1e1e1;
+            border-radius: 12px
+        }
+        input:focus,
+        select:focus {
+            outline: none;
+            border-color: #ff6347;
+            box-shadow: 0 0 0 3px rgba(255, 99, 71, .2)
+        }
+        button {
+            background: linear-gradient(45deg, #ff6347, #ff8c00);
+            color: #fff;
+            border: none;
+            padding: 1rem 2rem;
+            border-radius: 12px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            width: 100%
+        }
+        .results-section {
+            display: none;
+            width: 100%;
+            max-width: 1200px;
+            margin-top: 2rem
+        }
+        .hero-container {
+            padding: 2rem;
+            background: #fff9;
+            border-radius: 25px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, .1);
+            margin-bottom: 2rem;
+            text-align: center
+        }
+        .hero-title {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 1rem
+        }
+        .selected-wrap {
+            display: grid;
+            grid-template-columns: 1.2fr .8fr;
+            gap: 1.5rem;
+            align-items: start
+        }
+        .selected-card {
+            background: #fff;
+            border-radius: 20px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, .1);
+            overflow: hidden
+        }
+        .selected-img {
+            width: 100%;
+            height: 320px;
+            object-fit: cover
+        }
+        .selected-body {
+            padding: 1.25rem
+        }
+        .selected-title {
+            font-size: 1.6rem;
+            font-weight: 700;
+            margin-bottom: .25rem
+        }
+        .selected-sub {
+            color: #666;
+            margin-bottom: 1rem
+        }
+        .grid-two {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+            margin-top: .75rem
+        }
+        .pill {
+            display: inline-block;
+            background: #f5f5f5;
+            border-radius: 999px;
+            padding: .25rem .65rem;
+            font-size: .85rem;
+            margin-right: .5rem
+        }
+        .section-h {
+            font-weight: 600;
+            margin: .5rem 0 .25rem
+        }
+        .charts-container {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem
+        }
+        .chart-card {
+            flex: 1;
+            background: #fff;
+            border-radius: 20px;
+            padding: 1rem;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, .1)
+        }
+        .thumbs {
+            margin-top: 2rem
+        }
+        .thumbs-title {
+            font-weight: 700;
+            margin-bottom: .75rem
+        }
+        .top-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 1rem
+        }
+        .recipe-card {
+            background: #fff;
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, .1);
+            transition: .3s;
+            height: 340px;
+            cursor: pointer
+        }
+        .recipe-card:hover {
+            transform: translateY(-6px)
+        }
+        .recipe-image {
+            width: 100%;
+            height: 160px;
+            object-fit: cover
+        }
+        .recipe-info {
+            text-align: center;
+            padding: 1rem
+        }
+        .recipe-name {
+            font-size: 1.05rem;
+            font-weight: 600
+        }
+        .recipe-description {
+            font-size: .9rem;
+            color: #666;
+            margin: .4rem 0
+        }
+        canvas {
+            width: 100% !important;
+            height: 300px !important
+        }
+        @media(max-width:1024px) {
+            .selected-wrap {
+                grid-template-columns: 1fr
+            }
+        }
+        @media(max-width:768px) {
+            .chart-card {
+                padding: .75rem
+            }
+            .hero-title {
+                font-size: 2rem
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="logo">Recetario Inteligente</div>
+        <p class="tagline">Nutre la mente y el cuerpo</p>
+    </header>
+    <main>
+        <!-- FORMULARIO -->
+        <div id="formSection" class="form-section">
+            <h2 style="text-align:center;margin-bottom:1.5rem;">Personaliza tu receta</h2>
+            <form id="userForm">
+                <div class="form-group"><label for="nombre">Nombre:</label><input type="text" id="nombre" required>
+                </div>
+                <div class="form-group"><label for="edad">Edad:</label><input type="number" id="edad" required></div>
+                <div class="form-group"><label for="peso">Peso (kg):</label><input type="number" id="peso" required>
+                </div>
+                <div class="form-group"><label for="altura">Altura (cm):</label><input type="number" id="altura"
+                        required></div>
+                <div class="form-group">
+                    <label for="sexo">Sexo:</label>
+                    <select id="sexo" required>
+                        <option value="masculino">Masculino</option>
+                        <option value="femenino">Femenino</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="dieta">Dieta:</label>
+                    <select id="dieta" required>
+                        <option value="regular">Regular</option>
+                        <option value="vegetariana">Vegetariana</option>
+                        <option value="vegana">Vegana</option>
+                        <option value="diabetica">Diabética</option>
+                        <option value="celiaca">Celíaca</option>
+                        <option value="lactosa">Intolerante a la lactosa</option>
+                    </select>
+                </div>
+                <button type="submit">Generar Recetas</button>
+            </form>
+        </div>
+        <!-- RESULTADOS -->
+        <div id="resultsSection" class="results-section">
+            <div class="hero-container">
+                <h1 class="hero-title">¡Hola, <span id="saludo-usuario"></span>!</h1>
+                <p class="hero-subtitle">Tu receta seleccionada aparece abajo con todos los detalles. Podés cambiarla haciendo clic en cualquier miniatura.</p>
+            </div>
+            <!-- Seleccionada + Gráficos -->
+            <div class="selected-wrap">
+                <div class="selected-card" id="selectedRecipe">
+                    <!-- Se completa por JS -->
+                </div>
+                <div class="charts-container">
+                    <div class="chart-card">
+                        <h3 style="margin-bottom:.5rem">Proyección de Calorías</h3>
+                        <canvas id="graficoCalorias"></canvas>
+                    </div>
+                    <div class="chart-card" id="glucosaCard">
+                        <h3 style="margin-bottom:.5rem">Nivel de Glucosa</h3>
+                        <canvas id="graficoGlucosa"></canvas>
+                        <div id="glucoseAlert" style="margin-top:0.5rem; font-size:0.9rem; text-align:center;"></div>
+                    </div>
+                </div>
+            </div>
+            <!-- Miniaturas -->
+            <div class="thumbs">
+                <div class="thumbs-title">Otras recetas</div>
+                <div id="topList" class="top-list"></div>
+            </div>
+        </div>
+    </main>
+    <script>
+        // ========= RECETAS COMPLETAS CON ÍNDICE GLUCÉMICO =========
+        const infoDietas = {
+            regular: [
+                {
+                    nombre: "Ensalada de Quinoa", imagen: "ensaladaquinoa.jpg",
+                    ingredientes: "Quinoa, tomate, pepino, limón, aceite de oliva", infoNutricional: { proteinas: "12g", grasas: "8g", carbohidratos: "45g" },
+                    descripcion: "Fresca y nutritiva.", calorias: 420, pasos: "Cocinar quinoa, cortar vegetales, mezclar y aderezar.", tiempo: "20 min", indiceGlicemico: 53
+                },
+                {
+                    nombre: "Hamburguesa Clásica", imagen: "hamburguesaregular.jpg",
+                    ingredientes: "Pan, carne, queso, lechuga, tomate", infoNutricional: { proteinas: "25g", grasas: "20g", carbohidratos: "40g" },
+                    descripcion: "La clásica de siempre.", calorias: 650, pasos: "Sellar carne, armar y servir.", tiempo: "25 min", indiceGlicemico: 65
+                },
+                {
+                    nombre: "Pollo al Horno con Papas", imagen: "polloalhorno.jpg",
+                    ingredientes: "Pollo, papas, especias, aceite", infoNutricional: { proteinas: "30g", grasas: "15g", carbohidratos: "35g" },
+                    descripcion: "Reconfortante y simple.", calorias: 550, pasos: "Hornear pollo y papas sazonados.", tiempo: "45 min", indiceGlicemico: 70
+                },
+                {
+                    nombre: "Tacos de Carne", imagen: "tacoscarne.jpg",
+                    ingredientes: "Tortillas, carne, cebolla, cilantro, limón", infoNutricional: { proteinas: "22g", grasas: "12g", carbohidratos: "38g" },
+                    descripcion: "Sabrosos y rápidos.", calorias: 520, pasos: "Saltear carne, armar tacos.", tiempo: "20 min", indiceGlicemico: 60
+                },
+                {
+                    nombre: "Pasta Boloñesa", imagen: "pastabolog.jpg",
+                    ingredientes: "Pasta, carne molida, tomate, cebolla", infoNutricional: { proteinas: "24g", grasas: "14g", carbohidratos: "65g" },
+                    descripcion: "Clásico italiano.", calorias: 600, pasos: "Cocer pasta y salsa, mezclar.", tiempo: "30 min", indiceGlicemico: 65
+                },
+                {
+                    nombre: "Sándwich de Pollo", imagen: "sanguchepollo.jpg",
+                    ingredientes: "Pan integral, pollo, lechuga, tomate", infoNutricional: { proteinas: "20g", grasas: "9g", carbohidratos: "42g" },
+                    descripcion: "Ligero y práctico.", calorias: 400, pasos: "Armar sándwich.", tiempo: "10 min", indiceGlicemico: 50
+                },
+                {
+                    nombre: "Omelette Completo", imagen: "omelette.jpg",
+                    ingredientes: "Huevos, queso, jamón, espinaca", infoNutricional: { proteinas: "23g", grasas: "18g", carbohidratos: "5g" },
+                    descripcion: "Proteico y rápido.", calorias: 350, pasos: "Batir, cuajar y rellenar.", tiempo: "10 min", indiceGlicemico: 30
+                },
+                {
+                    nombre: "Sopa de Tomate", imagen: "sopatomate.jpg",
+                    ingredientes: "Tomate, cebolla, ajo, caldo", infoNutricional: { proteinas: "5g", grasas: "6g", carbohidratos: "20g" },
+                    descripcion: "Calentita y suave.", calorias: 220, pasos: "Cocinar y licuar.", tiempo: "25 min", indiceGlicemico: 38
+                },
+                {
+                    nombre: "Arroz con Pollo", imagen: "arrozpollo.jpg",
+                    ingredientes: "Arroz, pollo, zanahoria, arvejas", infoNutricional: { proteinas: "26g", grasas: "12g", carbohidratos: "60g" },
+                    descripcion: "Casero y rendidor.", calorias: 580, pasos: "Saltear, añadir arroz y caldo.", tiempo: "40 min", indiceGlicemico: 70
+                },
+                {
+                    nombre: "Ensalada César", imagen: "ensaladacesar.jpg",
+                    ingredientes: "Lechuga, pollo, crutones, aderezo", infoNutricional: { proteinas: "21g", grasas: "16g", carbohidratos: "18g" },
+                    descripcion: "Clásica y sabrosa.", calorias: 430, pasos: "Mezclar todo y servir.", tiempo: "15 min", indiceGlicemico: 45
+                }
+            ],
+            vegetariana: [
+                {
+                    nombre: "Hamburguesa Vegetariana", imagen: "hamburguesaveggie.jpg",
+                    ingredientes: "Pan integral, legumbres, lechuga, tomate", infoNutricional: { proteinas: "15g", grasas: "10g", carbohidratos: "50g" },
+                    descripcion: "Sin carne, con sabor.", calorias: 480, pasos: "Cocinar medallón y armar.", tiempo: "20 min", indiceGlicemico: 40
+                },
+                {
+                    nombre: "Risotto de Hongos", imagen: "risottohongos.jpg",
+                    ingredientes: "Arroz arbóreo, hongos, caldo", infoNutricional: { proteinas: "8g", grasas: "12g", carbohidratos: "60g" },
+                    descripcion: "Cremoso italiano.", calorias: 520, pasos: "Añadir caldo poco a poco.", tiempo: "30 min", indiceGlicemico: 65
+                },
+                {
+                    nombre: "Wrap de Vegetales", imagen: "wrapveggies.jpg",
+                    ingredientes: "Tortilla, hummus, verduras", infoNutricional: { proteinas: "10g", grasas: "7g", carbohidratos: "40g" },
+                    descripcion: "Rápido y saludable.", calorias: 350, pasos: "Untar, rellenar y enrollar.", tiempo: "10 min", indiceGlicemico: 55
+                },
+                {
+                    nombre: "Frittata de Verduras", imagen: "frittata.jpg",
+                    ingredientes: "Huevos, calabacín, pimiento", infoNutricional: { proteinas: "18g", grasas: "14g", carbohidratos: "9g" },
+                    descripcion: "Al horno, esponjosa.", calorias: 310, pasos: "Batir y hornear.", tiempo: "25 min", indiceGlicemico: 30
+                },
+                {
+                    nombre: "Curry de Garbanzos", imagen: "currygarbanzos.jpg",
+                    ingredientes: "Garbanzos, tomate, especias", infoNutricional: { proteinas: "14g", grasas: "11g", carbohidratos: "48g" },
+                    descripcion: "Aromático y suave.", calorias: 460, pasos: "Saltear y guisar.", tiempo: "30 min", indiceGlicemico: 35
+                },
+                {
+                    nombre: "Tacos de Coliflor", imagen: "tacoscoli.jpg",
+                    ingredientes: "Coliflor, tortillas, salsa", infoNutricional: { proteinas: "9g", grasas: "8g", carbohidratos: "42g" },
+                    descripcion: "Textura genial.", calorias: 380, pasos: "Hornear coliflor y armar.", tiempo: "25 min", indiceGlicemico: 40
+                },
+                {
+                    nombre: "Ensalada Mediterránea", imagen: "mediterranea.jpg",
+                    ingredientes: "Tomate, pepino, aceitunas, queso", infoNutricional: { proteinas: "12g", grasas: "14g", carbohidratos: "28g" },
+                    descripcion: "Refrescante.", calorias: 340, pasos: "Cortar, mezclar y aderezar.", tiempo: "10 min", indiceGlicemico: 45
+                },
+                {
+                    nombre: "Pasta al Pesto", imagen: "pastapesto.jpg",
+                    ingredientes: "Pasta, albahaca, nueces", infoNutricional: { proteinas: "13g", grasas: "18g", carbohidratos: "65g" },
+                    descripcion: "Clásico pesto.", calorias: 560, pasos: "Cocer pasta y mezclar.", tiempo: "20 min", indiceGlicemico: 65
+                },
+                {
+                    nombre: "Sopa Minestrone", imagen: "minestone.jpg",
+                    ingredientes: "Verduras, porotos, pasta", infoNutricional: { proteinas: "10g", grasas: "6g", carbohidratos: "44g" },
+                    descripcion: "Completa y casera.", calorias: 320, pasos: "Hervir con caldo.", tiempo: "35 min", indiceGlicemico: 50
+                },
+                {
+                    nombre: "Buddha Bowl", imagen: "munha.jpg",
+                    ingredientes: "Quinoa, tofu, verduras, semillas", infoNutricional: { proteinas: "19g", grasas: "13g", carbohidratos: "52g" },
+                    descripcion: "Colorido y balanceado.", calorias: 500, pasos: "Cocinar, montar y servir.", tiempo: "20 min", indiceGlicemico: 53
+                }
+            ],
+            vegana: [
+                {
+                    nombre: "Tofu Salteado", imagen: "tofusalteado.jpg",
+                    ingredientes: "Tofu, brócoli, zanahoria, soja", infoNutricional: { proteinas: "20g", grasas: "15g", carbohidratos: "30g" },
+                    descripcion: "Proteico y vegetal.", calorias: 380, pasos: "Saltear tofu y veggies.", tiempo: "20 min", indiceGlicemico: 35
+                },
+                {
+                    nombre: "Sopa de Lentejas", imagen: "sopalentejas.jpg",
+                    ingredientes: "Lentejas, zanahoria, apio", infoNutricional: { proteinas: "15g", grasas: "5g", carbohidratos: "55g" },
+                    descripcion: "Reconfortante.", calorias: 300, pasos: "Hervir hasta tierno.", tiempo: "35 min", indiceGlicemico: 30
+                },
+                {
+                    nombre: "Hamburguesa de Garbanzos", imagen: "hamburguesaveggie.jpg",
+                    ingredientes: "Garbanzos, pan vegano, verduras", infoNutricional: { proteinas: "18g", grasas: "10g", carbohidratos: "50g" },
+                    descripcion: "Textura genial.", calorias: 450, pasos: "Formar medallón y dorar.", tiempo: "25 min", indiceGlicemico: 35
+                },
+                {
+                    nombre: "Chili Vegano", imagen: "chiliveggie.jpg",
+                    ingredientes: "Porotos, tomate, especias", infoNutricional: { proteinas: "17g", grasas: "7g", carbohidratos: "58g" },
+                    descripcion: "Con cuerpo y sabor.", calorias: 470, pasos: "Guisar lento.", tiempo: "40 min", indiceGlicemico: 38
+                },
+                {
+                    nombre: "Poke Bowl Vegano", imagen: "poke.jpg",
+                    ingredientes: "Arroz, tofu, vegetales, sésamo", infoNutricional: { proteinas: "19g", grasas: "12g", carbohidratos: "62g" },
+                    descripcion: "Fresco y moderno.", calorias: 520, pasos: "Montar en bowl.", tiempo: "20 min", indiceGlicemico: 65
+                },
+                {
+                    nombre: "Pasta Alfredo Vegana", imagen: "alfredo.jpg",
+                    ingredientes: "Pasta, crema de cajú, ajo", infoNutricional: { proteinas: "14g", grasas: "16g", carbohidratos: "68g" },
+                    descripcion: "Cremosa sin lácteos.", calorias: 560, pasos: "Cocer pasta y salsa.", tiempo: "25 min", indiceGlicemico: 65
+                },
+                {
+                    nombre: "Curry Verde Vegano", imagen: "curryverde.jpg",
+                    ingredientes: "Leche coco, verduras, curry", infoNutricional: { proteinas: "9g", grasas: "18g", carbohidratos: "40g" },
+                    descripcion: "Aromático.", calorias: 520, pasos: "Cocción suave.", tiempo: "30 min", indiceGlicemico: 50
+                },
+                {
+                    nombre: "Ensalada de Kale", imagen: "kale.jpg",
+                    ingredientes: "Kale, quinoa, palta, semillas", infoNutricional: { proteinas: "12g", grasas: "14g", carbohidratos: "36g" },
+                    descripcion: "Crujiente y power.", calorias: 420, pasos: "Masajear kale y mezclar.", tiempo: "15 min", indiceGlicemico: 53
+                },
+                {
+                    nombre: "Tacos de Jackfruit", imagen: "jackfruit.jpg",
+                    ingredientes: "Jackfruit, tortillas, pico de gallo", infoNutricional: { proteinas: "7g", grasas: "8g", carbohidratos: "50g" },
+                    descripcion: "Estilo pulled.", calorias: 410, pasos: "Saltear y deshebrar.", tiempo: "25 min", indiceGlicemico: 55
+                },
+                {
+                    nombre: "Soba con Verduras", imagen: "soba.jpg",
+                    ingredientes: "Fideos soba, mix verduras, soja", infoNutricional: { proteinas: "13g", grasas: "6g", carbohidratos: "62g" },
+                    descripcion: "Oriental y liviano.", calorias: 480, pasos: "Cocer soba y saltear.", tiempo: "15 min", indiceGlicemico: 55
+                }
+            ],
+            diabetica: [
+                {
+                    nombre: "Pescado al Vapor", imagen: "vapor.jpg",
+                    ingredientes: "Pescado blanco, espárragos, limón", infoNutricional: { proteinas: "25g", grasas: "5g", carbohidratos: "10g" },
+                    descripcion: "Ligero y controlado.", calorias: 250, pasos: "Vapor suave.", tiempo: "20 min", indiceGlicemico: 20
+                },
+                {
+                    nombre: "Ensalada de Pollo y Palta", imagen: "ensaladapollopalta.jpg",
+                    ingredientes: "Pollo, palta, espinaca", infoNutricional: { proteinas: "28g", grasas: "18g", carbohidratos: "8g" },
+                    descripcion: "Completa y baja en CH.", calorias: 320, pasos: "Cortar y mezclar.", tiempo: "15 min", indiceGlicemico: 15
+                },
+                {
+                    nombre: "Salteado de Pavo", imagen: "pavo.jpg",
+                    ingredientes: "Pavo, pimientos, brócoli", infoNutricional: { proteinas: "27g", grasas: "9g", carbohidratos: "15g" },
+                    descripcion: "Proteico y colorido.", calorias: 330, pasos: "Saltear rápido.", tiempo: "20 min", indiceGlicemico: 30
+                },
+                {
+                    nombre: "Salmón a la Plancha", imagen: "salmonplancha.jpg",
+                    ingredientes: "Salmón, limón, verduras", infoNutricional: { proteinas: "26g", grasas: "14g", carbohidratos: "6g" },
+                    descripcion: "Omega-3 friendly.", calorias: 360, pasos: "Plancha y listo.", tiempo: "18 min", indiceGlicemico: 10
+                },
+                {
+                    nombre: "Bowl de Quinoa", imagen: "bowlquinoa.jpg",
+                    ingredientes: "Quinoa, pollo, verduras", infoNutricional: { proteinas: "22g", grasas: "10g", carbohidratos: "35g" },
+                    descripcion: "Balanceado.", calorias: 390, pasos: "Cocer quinoa y montar.", tiempo: "25 min", indiceGlicemico: 53
+                },
+                {
+                    nombre: "Tortilla de Claras", imagen: "claras.jpg",
+                    ingredientes: "Claras, espinaca, champiñón", infoNutricional: { proteinas: "19g", grasas: "4g", carbohidratos: "4g" },
+                    descripcion: "Muy magra.", calorias: 190, pasos: "Batir y cuajar.", tiempo: "10 min", indiceGlicemico: 15
+                },
+                {
+                    nombre: "Sopa de Verduras", imagen: "sopaverdu.jpg",
+                    ingredientes: "Mix verduras, caldo", infoNutricional: { proteinas: "6g", grasas: "4g", carbohidratos: "18g" },
+                    descripcion: "Liviana y saciante.", calorias: 160, pasos: "Hervir y sazonar.", tiempo: "25 min", indiceGlicemico: 35
+                },
+                {
+                    nombre: "Pechuga al Limón", imagen: "pechugalimon.jpg",
+                    ingredientes: "Pollo, limón, hierbas", infoNutricional: { proteinas: "30g", grasas: "8g", carbohidratos: "4g" },
+                    descripcion: "Simple y rica.", calorias: 280, pasos: "Plancha con limón.", tiempo: "15 min", indiceGlicemico: 10
+                },
+                {
+                    nombre: "Zoodles con Pesto", imagen: "zoodles.jpg",
+                    ingredientes: "Zucchini, pesto, tomates", infoNutricional: { proteinas: "9g", grasas: "13g", carbohidratos: "12g" },
+                    descripcion: "Bajo en CH.", calorias: 230, pasos: "Saltear y mezclar.", tiempo: "10 min", indiceGlicemico: 20
+                },
+                {
+                    nombre: "Berenjenas Rellenas", imagen: "berenjena.jpg",
+                    ingredientes: "Berenjena, pavo, verduras", infoNutricional: { proteinas: "21g", grasas: "9g", carbohidratos: "18g" },
+                    descripcion: "Horno saludable.", calorias: 300, pasos: "Hornear y gratinar.", tiempo: "35 min", indiceGlicemico: 35
+                }
+            ],
+            celiaca: [
+                {
+                    nombre: "Pizza sin Gluten", imagen: "pizzagluten.jpg",
+                    ingredientes: "Masa SG, salsa, queso, verduras", infoNutricional: { proteinas: "15g", grasas: "10g", carbohidratos: "50g" },
+                    descripcion: "Apta y sabrosa.", calorias: 500, pasos: "Armar y hornear.", tiempo: "20 min", indiceGlicemico: 60
+                },
+                {
+                    nombre: "Arroz con Pollo", imagen: "arrozpollo.jpg",
+                    ingredientes: "Arroz, pollo, verduras", infoNutricional: { proteinas: "20g", grasas: "10g", carbohidratos: "55g" },
+                    descripcion: "Clásico y SG.", calorias: 450, pasos: "Saltear y cocer.", tiempo: "35 min", indiceGlicemico: 70
+                },
+                {
+                    nombre: "Hamburguesa sin Gluten", imagen: "hamburguesaregular.jpg",
+                    ingredientes: "Pan SG, carne, vegetales", infoNutricional: { proteinas: "25g", grasas: "20g", carbohidratos: "40g" },
+                    descripcion: "Versión segura.", calorias: 600, pasos: "Dorar y armar.", tiempo: "25 min", indiceGlicemico: 65
+                },
+                {
+                    nombre: "Tortilla de Papas", imagen: "tortilla.jpg",
+                    ingredientes: "Papa, huevo, cebolla", infoNutricional: { proteinas: "14g", grasas: "18g", carbohidratos: "32g" },
+                    descripcion: "Tradicional y SG.", calorias: 430, pasos: "Cuajar lentamente.", tiempo: "25 min", indiceGlicemico: 70
+                },
+                {
+                    nombre: "Polenta Cremosa", imagen: "polenta.jpg",
+                    ingredientes: "Polenta, caldo, queso SG", infoNutricional: { proteinas: "11g", grasas: "12g", carbohidratos: "58g" },
+                    descripcion: "Suave y rica.", calorias: 480, pasos: "Cocer y mezclar.", tiempo: "20 min", indiceGlicemico: 65
+                },
+                {
+                    nombre: "Fajitas de Pollo SG", imagen: "fajitapollo.jpg",
+                    ingredientes: "Tortillas SG, pollo, pimientos", infoNutricional: { proteinas: "24g", grasas: "11g", carbohidratos: "46g" },
+                    descripcion: "Tex-Mex apto.", calorias: 510, pasos: "Saltear y armar.", tiempo: "20 min", indiceGlicemico: 55
+                },
+                {
+                    nombre: "Ensalada Griega", imagen: "mediterranea.jpg",
+                    ingredientes: "Tomate, pepino, feta SG", infoNutricional: { proteinas: "10g", grasas: "13g", carbohidratos: "20g" },
+                    descripcion: "Refrescante.", calorias: 300, pasos: "Cortar y mezclar.", tiempo: "10 min", indiceGlicemico: 40
+                },
+                {
+                    nombre: "Salmón con Papa", imagen: "salmonpapa.jpg",
+                    ingredientes: "Salmón, papa, limón", infoNutricional: { proteinas: "26g", grasas: "14g", carbohidratos: "28g" },
+                    descripcion: "Completo.", calorias: 520, pasos: "Horno/plancha.", tiempo: "25 min", indiceGlicemico: 70
+                },
+                {
+                    nombre: "Guiso de Lentejas SG", imagen: "guisolenteja.jpg",
+                    ingredientes: "Lentejas, verduras", infoNutricional: { proteinas: "17g", grasas: "6g", carbohidratos: "48g" },
+                    descripcion: "De cuchara.", calorias: 470, pasos: "Guisar lento.", tiempo: "40 min", indiceGlicemico: 30
+                },
+                {
+                    nombre: "Tarta de Verduras SG", imagen: "tartaverdura.jpg",
+                    ingredientes: "Masa SG, verduras, huevo", infoNutricional: { proteinas: "16g", grasas: "15g", carbohidratos: "42g" },
+                    descripcion: "Horno fácil.", calorias: 450, pasos: "Rellenar y hornear.", tiempo: "30 min", indiceGlicemico: 50
+                }
+            ],
+            lactosa: [
+                {
+                    nombre: "Crema de Calabaza", imagen: "cremacalabaza.jpg",
+                    ingredientes: "Calabaza, cebolla, caldo", infoNutricional: { proteinas: "5g", grasas: "5g", carbohidratos: "30g" },
+                    descripcion: "Suave sin lácteos.", calorias: 280, pasos: "Hervir y licuar.", tiempo: "25 min", indiceGlicemico: 65
+                },
+                {
+                    nombre: "Hamburguesa sin Lactosa", imagen: "hamburguesasl.jpg",
+                    ingredientes: "Pan, pavo, verduras", infoNutricional: { proteinas: "22g", grasas: "15g", carbohidratos: "35g" },
+                    descripcion: "Sabor completo.", calorias: 550, pasos: "Dorar y armar.", tiempo: "20 min", indiceGlicemico: 60
+                },
+                {
+                    nombre: "Ensalada César sin Lactosa", imagen: "ensaladacesar.jpg",
+                    ingredientes: "Lechuga, pollo, crutones, aderezo SL", infoNutricional: { proteinas: "20g", grasas: "15g", carbohidratos: "10g" },
+                    descripcion: "Adaptada y rica.", calorias: 350, pasos: "Mezclar y servir.", tiempo: "15 min", indiceGlicemico: 45
+                },
+                {
+                    nombre: "Pasta al Pomodoro", imagen: "pastabolog.jpg",
+                    ingredientes: "Pasta, tomate, ajo, aceite", infoNutricional: { proteinas: "12g", grasas: "8g", carbohidratos: "68g" },
+                    descripcion: "Clásico SL.", calorias: 520, pasos: "Cocer y mezclar.", tiempo: "20 min", indiceGlicemico: 65
+                },
+                {
+                    nombre: "Wok de Verduras", imagen: "wok.jpg",
+                    ingredientes: "Mix verduras, arroz, soja", infoNutricional: { proteinas: "10g", grasas: "7g", carbohidratos: "62g" },
+                    descripcion: "Rápido y SL.", calorias: 480, pasos: "Saltear fuerte.", tiempo: "15 min", indiceGlicemico: 65
+                },
+                {
+                    nombre: "Pollo a la Plancha", imagen: "polloplancha.jpg",
+                    ingredientes: "Pechuga, limón, especias", infoNutricional: { proteinas: "30g", grasas: "9g", carbohidratos: "3g" },
+                    descripcion: "Magro y SL.", calorias: 260, pasos: "Plancha y listo.", tiempo: "12 min", indiceGlicemico: 15
+                },
+                {
+                    nombre: "Arroz Frito SL", imagen: "arroz.jpg",
+                    ingredientes: "Arroz, huevo, verduras", infoNutricional: { proteinas: "13g", grasas: "10g", carbohidratos: "60g" },
+                    descripcion: "Estilo oriental.", calorias: 520, pasos: "Saltear y servir.", tiempo: "15 min", indiceGlicemico: 70
+                },
+                {
+                    nombre: "Puré de Batata SL", imagen: "batata.jpg",
+                    ingredientes: "Batata, aceite, sal", infoNutricional: { proteinas: "3g", grasas: "6g", carbohidratos: "35g" },
+                    descripcion: "Dulzón y suave.", calorias: 220, pasos: "Hervir y pisar.", tiempo: "20 min", indiceGlicemico: 50
+                },
+                {
+                    nombre: "Tacos de Cerdo SL", imagen: "tacochancho.jpg",
+                    ingredientes: "Cerdo, tortillas, cebolla", infoNutricional: { proteinas: "24g", grasas: "14g", carbohidratos: "36g" },
+                    descripcion: "Potentes y SL.", calorias: 540, pasos: "Saltear y armar.", tiempo: "18 min", indiceGlicemico: 60
+                },
+                {
+                    nombre: "Sopa de Caldo Claro", imagen: "caldoclaro.jpg",
+                    ingredientes: "Caldo, verduras", infoNutricional: { proteinas: "6g", grasas: "3g", carbohidratos: "14g" },
+                    descripcion: "Bien ligera.", calorias: 140, pasos: "Hervir breve.", tiempo: "12 min", indiceGlicemico: 35
+                }
+            ]
+        };
+
+        // ========= VARIABLES GLOBALES =========
+        let calorieChart = null;
+        let glucoseChart = null;
+        let selectedDietArray = [];
+        let selectedRecipeIndex = 0;
+        let currentDiet = "regular";
+        let currentBMR = 0;
+
+        // ========= FORM =========
+        document.getElementById("userForm").addEventListener("submit", e => {
+            e.preventDefault();
+            const nombre = document.getElementById("nombre").value.trim();
+            const edad = +document.getElementById("edad").value;
+            const peso = +document.getElementById("peso").value;
+            const altura = +document.getElementById("altura").value;
+            const sexo = document.getElementById("sexo").value;
+            currentDiet = document.getElementById("dieta").value;
+            if (!nombre || edad <= 0 || peso <= 0 || altura <= 0) { alert("Completa bien los datos"); return; }
+            document.getElementById("formSection").style.display = "none";
+            document.getElementById("resultsSection").style.display = "block";
+            document.getElementById("saludo-usuario").textContent = nombre;
+
+            // BMR
+            currentBMR = (sexo === "masculino")
+                ? 66.5 + (13.75 * peso) + (5 * altura) - (6.75 * edad)
+                : 655.1 + (9.56 * peso) + (1.85 * altura) - (4.68 * edad);
+
+            // Datos dieta y selección inicial
+            selectedDietArray = infoDietas[currentDiet] || [];
+            selectedRecipeIndex = 0;
+            renderSelectedRecipe();
+            renderThumbs();
+            updateCharts();
+        });
+
+        // ========= RENDER PRINCIPAL =========
+        function renderSelectedRecipe() {
+            const r = selectedDietArray[selectedRecipeIndex];
+            const el = document.getElementById("selectedRecipe");
+            el.innerHTML = `
+                <img src="${r.imagen}" class="selected-img" alt="${r.nombre}" onerror="this.src='https://placehold.co/1200x600/E8F0FE/1A73E8?text=Imagen+no+disponible'">
+                <div class="selected-body">
+                  <div class="pill">${r.tiempo}</div>
+                  <div class="pill">${r.calorias} cal</div>
+                  <h2 class="selected-title">${r.nombre}</h2>
+                  <div class="selected-sub">${r.descripcion}</div>
+                  <div class="grid-two">
+                    <div>
+                      <div class="section-h">Ingredientes</div>
+                      <div>${r.ingredientes}</div>
+                    </div>
+                    <div>
+                      <div class="section-h">Información Nutricional</div>
+                      <div>Proteínas: <b>${r.infoNutricional.proteinas}</b></div>
+                      <div>Grasas: <b>${r.infoNutricional.grasas}</b></div>
+                      <div>Carbohidratos: <b>${r.infoNutricional.carbohidratos}</b></div>
+                    </div>
+                  </div>
+                  <div class="section-h" style="margin-top:.75rem">Pasos</div>
+                  <div>${r.pasos}</div>
+                </div>
+              `;
+            document.getElementById("glucosaCard").style.display = "block";
+        }
+
+        function renderThumbs() {
+            const cont = document.getElementById("topList");
+            cont.innerHTML = "";
+            selectedDietArray.forEach((r, i) => {
+                if (i === selectedRecipeIndex) return;
+                const card = document.createElement("div");
+                card.className = "recipe-card";
+                card.innerHTML = `
+                    <img src="${r.imagen}" class="recipe-image" alt="${r.nombre}">
+                    <div class="recipe-info">
+                      <div class="recipe-name">${r.nombre}</div>
+                      <div class="recipe-description">${r.descripcion}</div>
+                    </div>
+                  `;
+                card.addEventListener("click", () => { selectedRecipeIndex = i; renderSelectedRecipe(); renderThumbs(); updateCharts(); });
+                cont.appendChild(card);
+            });
+        }
+
+       
+        function updateCharts() {
+            const r = selectedDietArray[selectedRecipeIndex];
+            const portions = [1, 2, 3, 4, 5];
+            const totalCalories = portions.map(p => Math.round(currentBMR + (r.calorias * p)));
+            createCalorieChart(portions, totalCalories, Math.round(currentBMR));
+            createGlucoseChart();
+        }
+
+        function createCalorieChart(labels, data, bmr) {
+            if (calorieChart) calorieChart.destroy();
+            const ctx = document.getElementById("graficoCalorias");
+            calorieChart = new Chart(ctx, {
+                type: "line",
+                data: {
+                    labels,
+                    datasets: [{
+                        label: `Calorías Totales (incluye BMR ${bmr})`,
+                        data,
+                        borderColor: "#ff6347",
+                        backgroundColor: "rgba(255,99,71,.2)",
+                        fill: true,
+                        tension: 0.3,
+                        pointRadius: 4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: { legend: { display: false } }
+                }
+            });
+        }
+
+        function createGlucoseChart() {
+            if (glucoseChart) glucoseChart.destroy();
+            const r = selectedDietArray[selectedRecipeIndex];
+            const carbohidratos = parseFloat(r.infoNutricional.carbohidratos) || 0;
+            const ig = r.indiceGlicemico || 50;
+            const cargaGlucemica = (ig * carbohidratos) / 100;
+
+            const horas = [0, 0.5, 1, 1.5, 2, 3, 4, 5];
+            const glucosaBase = 90;
+            let glucosa = [];
+
+            for (let t of horas) {
+                let pico = cargaGlucemica * 1.2;
+                let valor;
+
+                if (currentDiet === "diabetica") {
+                    valor = glucosaBase + pico * 1.4 * Math.exp(-1.0 * (t - 1.5)**2); // Más alto y lento
+                } else {
+                    valor = glucosaBase + pico * Math.exp(-2.0 * (t - 1)**2); // Normal
+                }
+                glucosa.push(Math.round(valor * 10) / 10);
+            }
+
+            const ctx = document.getElementById("graficoGlucosa");
+            glucoseChart = new Chart(ctx, {
+                type: "line",
+                data: {
+                    labels: horas,
+                    datasets: [{
+                        label: "Glucosa Estimada (mg/dL)",
+                        data: glucosa,
+                        borderColor: currentDiet === "diabetica" ? "#f44336" : "#4caf50", 
+                        backgroundColor: currentDiet === "diabetica" ? "rgba(244,67,54,0.2)" : "rgba(76,175,80,0.2)",
+                        fill: true,
+                        tension: 0.3,
+                        pointRadius: 4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        y: {
+                            title: { display: true, text: 'Glucosa (mg/dL)' },
+                            min: 80,
+                            max: Math.max(...glucosa) > 180 ? 220 : 160
+                        },
+                        x: {
+                            title: { display: true, text: 'Horas después de comer' }
+                        }
+                    }
+                }
+            });
+
+            const maxGlucosa = Math.max(...glucosa);
+            const alertEl = document.getElementById("glucoseAlert"); 
+            if (maxGlucosa > 180) {
+                alertEl.textContent = "Alta carga glucémica: considerá reducir porciones."; 
+                alertEl.style.color = "#d32f2f";
+            } else if (maxGlucosa > 140) {
+                alertEl.textContent = "Nivel aceptable, pero controlá si sos sensible.";
+                alertEl.style.color = "#f57c00";
+            } else {
+                alertEl.textContent = "Nivel de glucosa dentro de rango esperado.";
+                alertEl.style.color = "#2e7d32";
+            }
+        }
+    </script>
+</body>
+</html>
